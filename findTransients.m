@@ -1,11 +1,11 @@
-function peak_time = findTransients ...
+function peak_index = findTransients ...
     ( ...
         signal, ...
         FS ...
     )
-    threshold_ratio = 2.5;
+    threshold_ratio = 2.3;
     
-    tukey = window(@tukeywin,length(signal),0.3)';
+    tukey = window(@tukeywin,length(signal),0.2)';
 
     thirty_ms = ceil(0.03*FS);
     rmswin = window(@blackmanharris,thirty_ms)';
@@ -17,23 +17,23 @@ function peak_time = findTransients ...
     avg = mean(rms);
 
     MPH = threshold_ratio*avg;
-    [peaks, indices] = findpeaks( ...
+    [~, indices] = findpeaks( ...
                         rms, ...
-                        'MinPeakHeight',MPH);
-    
-    if isempty(peaks)
-        peak_time = NaN(1);
+                        'MinPeakHeight',MPH, ...
+                        'npeaks',1);
+    if isempty(indices)
+        peak_index = NaN(1);
     else
-        peak_time = indices/FS;
+        peak_index = indices;
     end
     
-    t = 0:(1/FS):((length(signal)-1)/FS);
-    figure
-    hold on
-    plot(t,MPH*ones(1,length(signal)))
-    plot(t,signal,'g')
-    findpeaks(rms,FS,'minpeakheight',MPH)
-    legend('threshold','signal','RMS')
-    xlabel('t [s]')
+%     t = 0:(1/FS):((length(signal)-1)/FS);
+%     figure
+%     hold on
+%     plot(t,MPH*ones(1,length(signal)))
+%     plot(t,signal,'g')
+%     findpeaks(rms,FS,'minpeakheight',MPH)
+%     legend('threshold','signal','RMS')
+%     xlabel('t [s]')
     
 end

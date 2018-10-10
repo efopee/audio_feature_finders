@@ -5,34 +5,22 @@ function [peak_dB, peak_freq] = findSpectral ...
         win ...
     )
 
-    ratio = 10;
-
-    K = length(vector);
-    N = length(win);
+    ratio = 12;
+    
+    wvector = vector.*win;
+    N = length(wvector);
     weight = sum(win);
-    M = floor(N/2);
-    n = floor(length(vector)/M)-1;
     
-    peak_dB = NaN(1,n);
-    peak_freq = NaN(1,n);
-    
-    for i = 0:n-1
-        
-        wvector = vector(i*M+1:i*M+N).*win;
-        spectrum = abs(fft(wvector,K)/weight);
+    spectrum = abs(fft(wvector)/weight);
+    logstrum = 20*log10(spectrum);
+    offset = logstrum(1);    
+   
+%     figure
+%     w = 0:FS/N:(N-1)*FS/N;
+%     plot(w,logstrum)
+%     hold on
+%     plot(w,medfilt1(logstrum-offset,50)+offset+ratio)
+%     xlabel('f [Hz]')
+%     legend('spectrum [dB]','medfilt')
 
-        
-        half_spectrum = 2*spectrum(1:floor(K/2));
-        df = FS/K;
-        
-        [peak_mag, peak_index, ~] = ...
-            findMaxPeak(half_spectrum, ...
-            1, ...
-            length(half_spectrum), ...
-            ratio ...
-            );
-        peak_dB(i+1) = 20*log10(peak_mag);
-        peak_freq(i+1) = df*(peak_index-1);
-
-    end
 end

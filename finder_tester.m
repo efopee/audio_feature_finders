@@ -1,17 +1,36 @@
-[Y, FS]=audioread('a.wav');
-start = 20000;
-len = 4410;
-audio = Y(start+1:start+len,1)';
-win = window(@blackmanharris, 4410)';
-t = 0:1/FS:(length(audio)-1)/FS;
+warning('off','all');
+
 tic
+[Y, FS]=audioread('a.wav');
 
-%[dB, freq] = findSpectral(audio, FS, win)
-harmonic_freq = findCepstral(audio, FS, win);
-imp_time = findTransients(audio, FS);
+Y = Y(:,1)';
+len = FS/10;
+
+win = window(@blackmanharris, len)';
+blocks = floor(length(Y)/length(win));
+harmonic_freq = zeros(3,blocks);
+impulses = zeros(1,blocks);
+
+for i = 1:blocks
+    audio = Y((i-1)*len+1 : i*len);
+    harmonic_freq(:,i) = findCepstral(audio,FS,win);
+    impulses(i) = findTransients(audio,FS);
+    findSpectral(audio,FS,win);
+end
+
 toc
-
 figure
-% sound(audio,FS)
+hold on
+blocksamples = 0:len:(blocks-1)*len;
+scatter(blocksamples,harmonic_freq(1,:))
+scatter(blocksamples,harmonic_freq(2,:))
+scatter(blocksamples,harmonic_freq(3,:))
 
-plot(audio)
+stem(blocksamples+impulses,500*impulses./impulses)
+
+
+plot(Y*1000)
+
+
+
+
